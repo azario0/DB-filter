@@ -1,0 +1,360 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Dataset Filter</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800">Property Dataset Filter</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Location Filters -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Location</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">City</label>
+                        <select id="city" multiple placeholder="Search cities..." class="mt-1 block w-full">
+                            {% for city in locations['cities'] %}
+                            <option value="{{ city }}">{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">District</label>
+                        <select id="district" multiple placeholder="Search districts..." class="mt-1 block w-full">
+                            {% for district in locations['districts'] %}
+                            <option value="{{ district }}">{{ district }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Front</label>
+                        <select id="front" multiple class="mt-1 block w-full">
+                            {% for front in fronts %}
+                            <option value="{{ front }}">{{ front }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price and Size Filters -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Price and Size</h2>
+                <div class="space-y-4">
+                    <!-- Price Range -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <input type="number" 
+                                       id="price_min" 
+                                       placeholder="Min Price"
+                                       min="{{ numeric_ranges['price']['min'] }}"
+                                       max="{{ numeric_ranges['price']['max'] }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <input type="number" 
+                                       id="price_max" 
+                                       placeholder="Max Price"
+                                       min="{{ numeric_ranges['price']['min'] }}"
+                                       max="{{ numeric_ranges['price']['max'] }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Size Range -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Size Range</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <input type="number" 
+                                       id="size_min" 
+                                       placeholder="Min Size"
+                                       min="{{ numeric_ranges['size']['min'] }}"
+                                       max="{{ numeric_ranges['size']['max'] }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <input type="number" 
+                                       id="size_max" 
+                                       placeholder="Max Size"
+                                       min="{{ numeric_ranges['size']['min'] }}"
+                                       max="{{ numeric_ranges['size']['max'] }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rooms -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bedrooms</label>
+                            <select id="bedrooms" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Any</option>
+                                {% for i in range(numeric_ranges['bedrooms']['min'], numeric_ranges['bedrooms']['max'] + 1) %}
+                                <option value="{{ i }}">{{ i }}+</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bathrooms</label>
+                            <select id="bathrooms" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Any</option>
+                                {% for i in range(numeric_ranges['bathrooms']['min'], numeric_ranges['bathrooms']['max'] + 1) %}
+                                <option value="{{ i }}">{{ i }}+</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Amenities</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    {% for amenity in ['furnished', 'ac', 'roof', 'pool', 'frontyard', 'basement', 'duplex', 'stairs', 'elevator', 'fireplace'] %}
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               id="{{ amenity }}" 
+                               value="true" 
+                               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="{{ amenity }}" class="ml-2 block text-sm text-gray-700">
+                            {{ amenity|title }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="mt-8">
+            <button id="apply-filters" 
+                    class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Apply Filters
+            </button>
+            
+            <div id="results-count" class="mt-4 text-gray-700"></div>
+            
+            <div class="mt-6 overflow-x-auto">
+                <table id="results-table" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">District</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beds</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Baths</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="results-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        // Initialize notifications
+        const notyf = new Notyf({
+            duration: 3000,
+            position: { x: 'right', y: 'top' }
+        });
+
+        // Initialize Tom Select for location dropdowns
+        const citySelect = new TomSelect('#city', {
+            plugins: ['remove_button'],
+            maxItems: null,
+            valueField: 'value',
+            labelField: 'label',
+            searchField: ['label'],
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                
+                fetch('/search-location', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        type: 'city'
+                    })
+                })
+                .then(response => response.json())
+                .then(json => {
+                    callback(json);
+                })
+                .catch(() => {
+                    callback();
+                });
+            }
+        });
+
+        const districtSelect = new TomSelect('#district', {
+            plugins: ['remove_button'],
+            maxItems: null,
+            valueField: 'value',
+            labelField: 'label',
+            searchField: ['label'],
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                
+                fetch('/search-location', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        type: 'district'
+                    })
+                })
+                .then(response => response.json())
+                .then(json => {
+                    callback(json);
+                })
+                .catch(() => {
+                    callback();
+                });
+            }
+        });
+
+        const frontSelect = new TomSelect('#front', {
+            plugins: ['remove_button'],
+            maxItems: null,
+        });
+
+        // Format price for display
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'decimal',
+                maximumFractionDigits: 0
+            }).format(price);
+        }
+
+        // Apply filters
+        document.getElementById('apply-filters').addEventListener('click', async () => {
+            const filters = {
+                city: citySelect.getValue(),
+                district: districtSelect.getValue(),
+                front: frontSelect.getValue(),
+                price: {
+                    min: document.getElementById('price_min').value || null,
+                    max: document.getElementById('price_max').value || null
+                },
+                size: {
+                    min: document.getElementById('size_min').value || null,
+                    max: document.getElementById('size_max').value || null
+                },
+                 bedrooms: document.getElementById('bedrooms').value || null,
+                bathrooms: document.getElementById('bathrooms').value || null
+            };
+
+            // Add boolean filters
+            ['furnished', 'ac', 'roof', 'pool', 'frontyard', 'basement', 'duplex', 'stairs', 'elevator', 'fireplace']
+            .forEach(field => {
+                const checkbox = document.getElementById(field);
+                if (checkbox.checked) {
+                    filters[field] = true;
+                } else {
+                    filters[field] = null;
+                }
+            });
+
+            try {
+                const response = await fetch('/filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(filters)
+                });
+                
+                const result = await response.json();
+                
+                // Update results count (fixed property access)
+                document.getElementById('results-count').textContent = 
+                    `Found ${result.count} properties matching your criteria`;
+                
+                // Update results table
+                const tbody = document.getElementById('results-body');
+                tbody.innerHTML = '';
+                
+                // Make sure we're accessing the data array
+                if (result.data && Array.isArray(result.data)) {
+                    result.data.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.city || ''}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.district || ''}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatPrice(item.price) || ''}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.size || ''}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.bedrooms || ''}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.bathrooms || ''}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${item.details || ''}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+                
+                notyf.success('Filters applied successfully');
+            } catch (error) {
+                console.error('Error:', error);
+                notyf.error('Error applying filters: ' + error.message);
+            }
+        });
+
+        // Clear filters button
+        const clearFilters = document.createElement('button');
+        clearFilters.textContent = 'Clear Filters';
+        clearFilters.className = 'ml-4 bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2';
+        document.getElementById('apply-filters').after(clearFilters);
+
+        clearFilters.addEventListener('click', () => {
+            // Clear all selections
+            citySelect.clear();
+            districtSelect.clear();
+            frontSelect.clear();
+            
+            // Clear price and size inputs
+            document.getElementById('price_min').value = '';
+            document.getElementById('price_max').value = '';
+            document.getElementById('size_min').value = '';
+            document.getElementById('size_max').value = '';
+            
+            // Reset selects
+            document.getElementById('bedrooms').value = '';
+            document.getElementById('bathrooms').value = '';
+            
+            // Uncheck all checkboxes
+            ['furnished', 'ac', 'roof', 'pool', 'frontyard', 'basement', 'duplex', 'stairs', 'elevator', 'fireplace']
+            .forEach(field => {
+                document.getElementById(field).checked = false;
+            });
+
+            // Clear results
+            document.getElementById('results-count').textContent = '';
+            document.getElementById('results-body').innerHTML = '';
+            
+            notyf.success('All filters cleared');
+        });
+    </script>
+</body>
+</html>
